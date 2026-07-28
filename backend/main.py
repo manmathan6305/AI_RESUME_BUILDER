@@ -580,7 +580,9 @@ Return ONLY the final output."""
 async def optimize_ats(request: ATSOptimizationRequest):
     """Analyse and improve a resume against a job description via Groq."""
     if not groq_client:
-        raise HTTPException(status_code=500, detail="GROQ_API_KEY not configured")
+        return {
+            "analysis": "GROQ_API_KEY not configured"
+        }
 
     try:
         resume_text = format_resume_text(request.resumeData)
