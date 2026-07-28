@@ -240,11 +240,14 @@ function DropZone({ onText }: { onText: (t: string, name: string) => void }) {
       if (!res.ok || data.error) {
         let msg = data.error || data.detail || `Upload failed (${res.status})`;
         
-        // Custom UX fallback logic
         if (msg.includes("scanned") || msg.includes("No text extracted")) {
            msg = "This looks like a scanned resume. Please paste manually.";
         }
         throw new Error(msg);
+      }
+      
+      if (!data.text) {
+        throw new Error('The server returned no extracted text.');
       }
       
       onText(data.text, file.name);
@@ -337,9 +340,12 @@ const ATSAnalyzer: React.FC = () => {
       });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        throw new Error(data.detail || `Server error (${res.status})`);
+        throw new Error(data.detail || data.error || `Server error (${res.status})`);
       }
-      const data: ATSResult = await res.json();
+      const data: ATSResult = await res.json().catch(() => ({} as ATSResult));
+      if (!data || typeof data.ats_score !== 'number') {
+        throw new Error('The server returned an invalid analysis response.');
+      }
       setResult(data);
       setStep(3);
     } catch (e: unknown) {

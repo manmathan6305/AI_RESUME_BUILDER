@@ -48,8 +48,9 @@ DEFAULT_ORIGINS = [
     "http://127.0.0.1:5173",
     "http://127.0.0.1:5174",
     "http://127.0.0.1:3000",
+    "https://ai-resume-builder-o87l.onrender.com",
 ]
-ALLOWED_ORIGINS = DEFAULT_ORIGINS + [o.strip() for o in FRONTEND_ORIGINS if o.strip()]
+ALLOWED_ORIGINS = list(dict.fromkeys(DEFAULT_ORIGINS + [o.strip() for o in FRONTEND_ORIGINS if o.strip()]))
 
 app.add_middleware(
     CORSMiddleware,
@@ -447,7 +448,16 @@ async def ats_score(request: ATSScoreRequest):
     Returns: ats_score, matched_keywords, missing_keywords, suggestions.
     """
     if not groq_client:
-        raise HTTPException(status_code=500, detail="GROQ_API_KEY not configured")
+        return {
+            "ats_score": 0,
+            "matched_keywords": [],
+            "missing_keywords": [],
+            "suggestions": [
+                "Set the GROQ_API_KEY environment variable in Render to enable AI-powered ATS analysis.",
+                "You can still use the UI with the fallback response until the key is configured."
+            ],
+            "raw": "GROQ_API_KEY not configured"
+        }
 
     if not request.resume_text.strip() or not request.job_description.strip():
         raise HTTPException(status_code=400, detail="resume_text and job_description are required")

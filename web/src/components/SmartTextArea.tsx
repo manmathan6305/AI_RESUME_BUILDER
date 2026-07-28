@@ -48,23 +48,28 @@ const SmartTextArea: React.FC<SmartTextAreaProps> = ({
       });
 
       if (response.ok) {
-        const data = await response.json();
+        const data = await response.json().catch(() => ({}));
         if (data.enhancedText) {
           onChange(data.enhancedText);
           setShowUndo(true);
           setTimeout(() => setShowUndo(false), 6000);
+        } else {
+          throw new Error('No enhanced text returned by the server.');
         }
-      } else if (response.status === 429) {
-        setErrorMsg('Rate limit hit — wait a moment & retry');
-        setTimeout(() => setErrorMsg(''), 5000);
       } else {
-        setErrorMsg('Enhancement failed');
-        setTimeout(() => setErrorMsg(''), 4000);
+        const errorData = await response.json().catch(() => ({}));
+        const detail = errorData.detail || errorData.error || 'Enhancement failed';
+        if (response.status === 429) {
+          setErrorMsg('Rate limit hit — wait a moment & retry');
+        } else {
+          setErrorMsg(detail);
+        }
+        setTimeout(() => setErrorMsg(''), 5000);
       }
     } catch (e) {
       console.error('AI service error', e);
-      setErrorMsg('Cannot reach AI service');
-      setTimeout(() => setErrorMsg(''), 4000);
+      setErrorMsg(e instanceof Error ? e.message : 'Cannot reach AI service');
+      setTimeout(() => setErrorMsg(''), 5000);
     } finally {
       setIsEnhancing(false);
     }
@@ -163,4 +168,4 @@ const SmartTextArea: React.FC<SmartTextAreaProps> = ({
 };
 
 export default SmartTextArea;
-
+
