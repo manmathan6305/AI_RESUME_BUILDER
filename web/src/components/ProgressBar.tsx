@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from 'react';
+import React from 'react';
 import { motion } from 'framer-motion';
 import { Check } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -22,7 +22,6 @@ const stepRoutes = [
 ];
 
 const ProgressBar: React.FC<ProgressBarProps> = ({ currentStep, totalSteps, steps }) => {
-  const scrollRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
 
   const handleStepClick = (index: number) => {

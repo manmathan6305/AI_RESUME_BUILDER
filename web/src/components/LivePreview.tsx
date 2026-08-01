@@ -220,8 +220,6 @@ const LivePreview: React.FC = () => {
     padding: 0,
   };
 
-  /** Muted / secondary body text */
-  const muted: React.CSSProperties = { ...body, color: T.cMuted };
 
   /** Unordered list container */
   const ulStyle: React.CSSProperties = {

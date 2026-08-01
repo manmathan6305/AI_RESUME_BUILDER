@@ -130,31 +130,39 @@ const ResumeCard: React.FC<ResumeCardProps> = ({ data }) => {
       )}
 
       {/* Skills */}
-      {skills.length > 0 && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5 }}
-        >
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
-            Skills
-          </h2>
-          <div className="flex flex-wrap gap-2">
-            {skills.map((skill, index) => (
-              <motion.span
-                key={index}
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.6 + index * 0.1 }}
-                whileHover={{ scale: 1.05 }}
-                className="px-3 py-1 bg-accent-100 dark:bg-accent-900 text-accent-700 dark:text-accent-300 rounded-full text-sm font-medium"
-              >
-                {skill}
-              </motion.span>
-            ))}
-          </div>
-        </motion.div>
-      )}
+      {(() => {
+        const allSkills = [
+          ...(skills.languages  || []),
+          ...(skills.frameworks || []),
+          ...(skills.tools      || []),
+          ...(skills.concepts   || []),
+        ];
+        return allSkills.length > 0 ? (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5 }}
+          >
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
+              Skills
+            </h2>
+            <div className="flex flex-wrap gap-2">
+              {allSkills.map((skill, index) => (
+                <motion.span
+                  key={index}
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 0.6 + index * 0.1 }}
+                  whileHover={{ scale: 1.05 }}
+                  className="px-3 py-1 bg-accent-100 dark:bg-accent-900 text-accent-700 dark:text-accent-300 rounded-full text-sm font-medium"
+                >
+                  {skill}
+                </motion.span>
+              ))}
+            </div>
+          </motion.div>
+        ) : null;
+      })()}
 
       {/* Extra Information */}
       {extra && extra.length > 0 && (

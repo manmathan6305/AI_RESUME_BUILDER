@@ -96,8 +96,9 @@ const Preview: React.FC = () => {
       ]);
 
       // Render the React component tree to a PDF Blob in-memory
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const blob = await pdf(
-        React.createElement(ResumePDF, { data: resumeData })
+        React.createElement(ResumePDF, { data: resumeData }) as any
       ).toBlob();
 
       // Trigger browser file download
