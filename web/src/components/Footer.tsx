@@ -44,7 +44,7 @@ const Footer: React.FC = () => {
                 rel="noopener noreferrer"
                 className="text-gray-400 hover:text-white transition-colors"
               >
-                <Linkedin className="w-5 h-5" />
+                <Linkedin className="w-5 h-5"/>
               </motion.a>
             </div>
           </div>

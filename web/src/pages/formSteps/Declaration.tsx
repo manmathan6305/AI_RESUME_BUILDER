@@ -5,8 +5,6 @@ import { useResume } from '../../context/ResumeContext';
 import ProgressBar from '../../components/ProgressBar';
 import { FileText, SkipForward, Info } from 'lucide-react';
 
-const DEFAULT_DECLARATION = "I hereby declare that the information provided above is true and accurate to the best of my knowledge and belief.";
-
 const Declaration: React.FC = () => {
   const { resumeData, updateDeclaration } = useResume();
   const navigate = useNavigate();
