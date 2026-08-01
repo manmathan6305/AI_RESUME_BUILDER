@@ -1,231 +1,663 @@
 import React, { useState, useEffect } from 'react';
 import { useResume } from '../context/ResumeContext';
 
+/* ═══════════════════════════════════════════════════════════════════════════
+   FONT
+   Times New Roman = system font → renders identically in browser + html2canvas
+═══════════════════════════════════════════════════════════════════════════ */
+const TNR = "'Times New Roman', Times, serif";
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   A4 @ 96 dpi
+     210 mm = 794 px   (width)
+     297 mm = 1123 px  (height)
+═══════════════════════════════════════════════════════════════════════════ */
+const A4_W = 794;
+const A4_H = 1123;
+
+/* ═══════════════════════════════════    ════════════════════════════════════════
+   DESIGN TOKENS — single source of truth
+   All spacing is in px; comments show the mm equivalent at 96 dpi.
+═══════════════════════════════════════════════════════════════════════════ */
+const T = {
+  /* Typography */
+  font: TNR,
+  nameSize: '26px',
+  headSize: '13.5px',
+  bodySize: '12.5px',
+  smallSize: '11px',
+  lh: 1.42,          // line-height for body
+  lhHead: 1.2,           // line-height for headings
+
+  /* Weights */
+  wNormal: 400,
+  wBold: 700,
+
+  /* Colours */
+  cName: '#0d0d0d',
+  cHead: '#111111',
+  cBody: '#1a1a1a',
+  cMuted: '#555555',
+  cLink: '#1a56b0',
+  cRule: '#111111',
+  cPipe: '#999999',
+
+  /* Page margins (mm → px at 96 dpi) */
+  mTop: 76,   // 20 mm
+  mBot: 68,   // 18 mm
+  mLeft: 68,   // 18 mm
+  mRight: 68,   // 18 mm
+
+  /* Inter-section vertical gap */
+  secGapTop: 13,   // px above each section heading
+  secGapBot: 5,    // px below each section heading (between rule and content)
+
+  /* Gap between items within a section (experience entries, education, etc.) */
+  itemGap: 10,   // px
+
+  /* Left indent for bullet lists */
+  bulletIndent: 16,   // px
+};
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   HELPERS
+═══════════════════════════════════════════════════════════════════════════ */
+const stripProtocol = (url: string) => url.replace(/^https?:\/\//, '');
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   SUB-COMPONENTS
+═══════════════════════════════════════════════════════════════════════════ */
+
+/**
+ * PageBreakSection
+ * Wraps every resume section so html2pdf never slices it mid-content.
+ */
+const Sec: React.FC<{ children: React.ReactNode; extraTopPx?: number }> = ({
+  children,
+  extraTopPx = 0,
+}) => (
+  <div
+    style={{
+      pageBreakInside: 'avoid',
+      breakInside: 'avoid',
+      marginTop: `${T.secGapTop + extraTopPx}px`,
+    }}
+  >
+    {children}
+  </div>
+);
+
+/**
+ * SectionHeading
+ * ALL-CAPS bold label + full-width 2 px rule underneath.
+ * The heading takes up the full content width so the rule always
+ * reaches the right edge.
+ */
+const SectionHeading: React.FC<{ title: string }> = ({ title }) => (
+  <div
+    style={{
+      marginBottom: `${T.secGapBot}px`,
+      width: '100%',
+    }}
+  >
+    <h2
+      style={{
+        fontFamily: T.font,
+        fontSize: T.headSize,
+        fontWeight: T.wBold,
+        letterSpacing: '0.09em',
+        textTransform: 'uppercase',
+        color: T.cHead,
+        margin: 0,
+        padding: '0 0 2px 0',
+        borderBottom: `2px solid ${T.cRule}`,
+        lineHeight: T.lhHead,
+        width: '100%',
+        boxSizing: 'border-box',
+        display: 'block',
+      }}
+    >
+      {title}
+    </h2>
+  </div>
+);
+
+/**
+ * EntryRow
+ * Two-column flex row used for every "label ··· right-value" pair.
+ * Left side grows; right side is fixed-size and never wraps.
+ */
+const EntryRow: React.FC<{
+  left: React.ReactNode;
+  right: React.ReactNode;
+  bold?: boolean;
+  topPx?: number;
+}> = ({ left, right, bold = false, topPx = 0 }) => (
+  <div
+    style={{
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'baseline',
+      width: '100%',
+      marginTop: topPx ? `${topPx}px` : 0,
+    }}
+  >
+    <span
+      style={{
+        fontFamily: T.font,
+        fontSize: T.bodySize,
+        fontWeight: bold ? T.wBold : T.wNormal,
+        color: T.cBody,
+        lineHeight: T.lh,
+        flex: 1,
+        minWidth: 0,          // allow flex child to shrink
+        wordBreak: 'break-word',
+        paddingRight: '12px',   // guaranteed gap before right column
+      }}
+    >
+      {left}
+    </span>
+    <span
+      style={{
+        fontFamily: T.font,
+        fontSize: T.smallSize,
+        fontWeight: T.wBold,
+        color: T.cBody,
+        lineHeight: T.lh,
+        whiteSpace: 'nowrap',
+        flexShrink: 0,
+        textAlign: 'right',
+      }}
+    >
+      {right}
+    </span>
+  </div>
+);
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   MAIN COMPONENT
+═══════════════════════════════════════════════════════════════════════════ */
 const LivePreview: React.FC = () => {
   const { resumeData } = useResume();
-  const [debouncedResumeData, setDebouncedResumeData] = useState(resumeData);
+  const [data, setData] = useState(resumeData);
 
   useEffect(() => {
-    const handler = setTimeout(() => {
-      setDebouncedResumeData(resumeData);
-    }, 800); // 800ms debounce for smoother typing experience
-
-    return () => {
-      clearTimeout(handler);
-    };
+    const t = setTimeout(() => setData(resumeData), 600);
+    return () => clearTimeout(t);
   }, [resumeData]);
 
-  const { personalInfo, education, experience, projects, skills, certifications, achievements, extra, declaration } = debouncedResumeData;
+  const { personalInfo, education, experience, projects,
+    skills, certifications, achievements, extra, declaration } = data;
 
+  /* ── Assemble contact / link lines ── */
+  const contacts: string[] = [];
+  if (personalInfo.address) contacts.push(personalInfo.address);
+  if (personalInfo.phone) contacts.push(personalInfo.phone);
+  if (personalInfo.email) contacts.push(personalInfo.email);
 
+  const profileLinks: string[] = [];
+  if (personalInfo.linkedin) profileLinks.push(stripProtocol(personalInfo.linkedin));
+  if (personalInfo.github) profileLinks.push(stripProtocol(personalInfo.github));
+
+  /* ── Skill rows (non-empty only) ── */
+  const skillRows = [
+    { label: 'Programming', vals: skills.languages },
+    { label: 'Frameworks & Libraries', vals: skills.frameworks },
+    { label: 'Tools & Technologies', vals: skills.tools },
+    { label: 'Concepts', vals: skills.concepts },
+  ].filter(r => r.vals && r.vals.length > 0);
+
+  /* ── Shared inline styles ── */
+
+  /** Canonical body text */
+  const body: React.CSSProperties = {
+    fontFamily: T.font,
+    fontSize: T.bodySize,
+    fontWeight: T.wNormal,
+    color: T.cBody,
+    lineHeight: T.lh,
+    margin: 0,
+    padding: 0,
+  };
+
+  /** Muted / secondary body text */
+  const muted: React.CSSProperties = { ...body, color: T.cMuted };
+
+  /** Unordered list container */
+  const ulStyle: React.CSSProperties = {
+    margin: `4px 0 0 0`,
+    padding: `0 0 0 ${T.bulletIndent}px`,
+    listStyleType: 'disc',
+  };
+
+  /** List item */
+  const liStyle: React.CSSProperties = {
+    ...body,
+    display: 'list-item',
+    marginBottom: '3px',
+    paddingLeft: '2px',
+  };
+
+  /** Pipe separator in header */
+  const pipe = (
+    <span style={{ margin: '0 9px', color: T.cPipe, fontWeight: T.wNormal }}>
+      |
+    </span>
+  );
+
+  /* ══════════════════════════════════════════════════════════════════════
+     RENDER
+     #resume-preview is pinned at 794 px (A4 width @ 96 dpi).
+     html2canvas will capture exactly 794 px, and jsPDF places it 1:1
+     on a 210mm A4 page — zero scaling distortion.
+  ══════════════════════════════════════════════════════════════════════ */
   return (
-    <div className="bg-white text-black p-[40px] shadow-2xl min-h-[1100px] w-full text-[12px] font-sans leading-relaxed" id="resume-preview">
-      {/* HEADER */}
-      <div className="mb-4">
-        <h1 className="text-3xl font-bold uppercase mb-2 tracking-wide text-gray-900 border-b-2 border-gray-900 pb-2">
-          {personalInfo.firstName} {personalInfo.lastName}
+    <div
+      id="resume-preview"
+      style={{
+        fontFamily: T.font,
+        fontSize: T.bodySize,
+        color: T.cBody,
+        lineHeight: T.lh,
+        background: '#ffffff',
+        width: `${A4_W}px`,
+        minHeight: `${A4_H}px`,
+        paddingTop: `${T.mTop}px`,
+        paddingBottom: `${T.mBot}px`,
+        paddingLeft: `${T.mLeft}px`,
+        paddingRight: `${T.mRight}px`,
+        boxSizing: 'border-box',
+        overflowX: 'hidden',
+        overflowY: 'visible',
+        display: 'block',
+        position: 'relative',
+      }}
+    >
+
+      {/* ────────────────────────────────────────────────────────────────
+          HEADER  (centred block)
+      ──────────────────────────────────────────────────────────────── */}
+      <div
+        style={{
+          textAlign: 'center',
+          pageBreakInside: 'avoid',
+          breakInside: 'avoid',
+          marginBottom: '8px',
+        }}
+      >
+        {/* Name */}
+        <h1
+          style={{
+            fontFamily: T.font,
+            fontSize: T.nameSize,
+            fontWeight: T.wBold,
+            letterSpacing: '0.06em',
+            textTransform: 'uppercase',
+            color: T.cName,
+            margin: '0 0 5px 0',
+            padding: 0,
+            lineHeight: 1.1,
+            textAlign: 'center',
+          }}
+        >
+          {personalInfo.firstName || 'Your'}&nbsp;{personalInfo.lastName || 'Name'}
         </h1>
-        <div className="mt-2 text-sm text-gray-800 flex flex-wrap gap-3 items-center">
-            {personalInfo.phone && <span>{personalInfo.phone}</span>}
-            {personalInfo.email && (
-                <>
-                    <span className="text-gray-400">|</span>
-                    <span>{personalInfo.email}</span>
-                </>
-            )}
-            {personalInfo.address && (
-                <>
-                    <span className="text-gray-400">|</span>
-                    <span>{personalInfo.address}</span>
-                </>
-            )}
-             {/* Add LinkedIn/GitHub logic if fields added later to PersonalInfo */}
-        </div>
+
+        {/* Contact line: Address | Phone | Email */}
+        {contacts.length > 0 && (
+          <p
+            style={{
+              ...body,
+              textAlign: 'center',
+              margin: '0 0 2px 0',
+            }}
+          >
+            {contacts.map((c, i) => (
+              <React.Fragment key={i}>
+                {i > 0 && pipe}
+                {c}
+              </React.Fragment>
+            ))}
+          </p>
+        )}
+
+        {/* Profile links line: LinkedIn | GitHub */}
+        {profileLinks.length > 0 && (
+          <p
+            style={{
+              ...body,
+              textAlign: 'center',
+              color: T.cLink,
+              margin: 0,
+            }}
+          >
+            {profileLinks.map((lk, i) => (
+              <React.Fragment key={i}>
+                {i > 0 && pipe}
+                <span style={{ textDecoration: 'underline' }}>{lk}</span>
+              </React.Fragment>
+            ))}
+          </p>
+        )}
       </div>
 
-      {/* PROFESSIONAL SUMMARY */}
+      {/* Full-width horizontal rule separating header from body */}
+      <div
+        style={{
+          width: '100%',
+          borderTop: `2px solid ${T.cRule}`,
+          marginBottom: '0px',
+        }}
+      />
+
+      {/* ────────────────────────────────────────────────────────────────
+          PROFESSIONAL SUMMARY
+      ──────────────────────────────────────────────────────────────── */}
       {personalInfo.summary && (
-        <div className="mb-4">
-          <h2 className="text-sm font-bold uppercase border-b border-gray-400 mb-2 pb-1 tracking-wider">
-            Professional Summary
-          </h2>
-          <p className="text-gray-800 leading-snug">
+        <Sec>
+          <SectionHeading title="Professional Summary" />
+          <p style={{ ...body, textAlign: 'justify', wordBreak: 'break-word' }}>
             {personalInfo.summary}
           </p>
-        </div>
+        </Sec>
       )}
 
-      {/* EDUCATION */}
-      {education.length > 0 && (
-        <div className="mb-4">
-          <h2 className="text-sm font-bold uppercase border-b border-gray-400 mb-2 pb-1 tracking-wider">
-            Education
-          </h2>
-          <div className="space-y-3">
-            {education.map((edu, index) => (
-              <div key={index}>
-                <div className="flex justify-between font-bold">
-                  <span>{edu.degree}</span>
-                  <span>{edu.startYear} – {edu.endYear}</span>
-                </div>
-                <div className="flex justify-between">
-                    <span className="italic text-gray-800">{edu.institution}</span>
-                    {edu.gpa && <span className="text-gray-700 text-xs">GPA: {edu.gpa}</span>}
-                </div>
+      {/* ────────────────────────────────────────────────────────────────
+          SKILLS
+          Label column: fixed 160 px — aligns colon edge across all rows.
+          Value column: flex:1 — wraps naturally on long skill lists.
+      ──────────────────────────────────────────────────────────────── */}
+      {skillRows.length > 0 && (
+        <Sec>
+          <SectionHeading title="Skills" />
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '4px',
+            }}
+          >
+            {skillRows.map((row, i) => (
+              <div
+                key={i}
+                style={{
+                  display: 'flex',
+                  alignItems: 'baseline',
+                  width: '100%',
+                }}
+              >
+                {/* Fixed-width label column — all colons align vertically */}
+                <span
+                  style={{
+                    fontFamily: T.font,
+                    fontSize: T.bodySize,
+                    fontWeight: T.wBold,
+                    color: T.cBody,
+                    lineHeight: T.lh,
+                    width: '160px',
+                    flexShrink: 0,
+                    paddingRight: '6px',
+                  }}
+                >
+                  {row.label}:
+                </span>
+                {/* Value column */}
+                <span
+                  style={{
+                    fontFamily: T.font,
+                    fontSize: T.bodySize,
+                    fontWeight: T.wNormal,
+                    color: T.cBody,
+                    lineHeight: T.lh,
+                    flex: 1,
+                    wordBreak: 'break-word',
+                  }}
+                >
+                  {row.vals.join(', ')}
+                </span>
               </div>
             ))}
           </div>
-        </div>
+        </Sec>
       )}
 
-      {/* PROFESSIONAL EXPERIENCE */}
+      {/* ────────────────────────────────────────────────────────────────
+          EXPERIENCE
+      ──────────────────────────────────────────────────────────────── */}
       {experience.length > 0 && (
-        <div className="mb-4">
-          <h2 className="text-sm font-bold uppercase border-b border-gray-400 mb-2 pb-1 tracking-wider">
-            Professional Experience
-          </h2>
-          <div className="space-y-4">
-            {experience.map((exp, index) => (
-              <div key={index}>
-                <div className="flex justify-between font-bold">
-                  <span>{exp.jobTitle}</span>
-                  <span className="text-nowrap">{exp.startDate} – {exp.current ? 'Present' : exp.endDate}</span>
-                </div>
-                <div className="flex justify-between mb-1">
-                    <span className="italic font-semibold text-gray-800">{exp.company} {exp.location ? `| ${exp.location}` : ''}</span>
-                </div>
-                <ul className="list-disc pl-5 space-y-1 text-gray-800">
-                  {exp.responsibilities.map((resp, idx) => (
-                    resp && <li key={idx} className="pl-1">{resp}</li>
-                  ))}
-                </ul>
+        <Sec>
+          <SectionHeading title="Experience" />
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: `${T.itemGap}px`,
+            }}
+          >
+            {experience.map((exp, idx) => (
+              <div
+                key={idx}
+                style={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}
+              >
+                {/* Row 1: Job Title — Company, Location ··· Date range */}
+                <EntryRow
+                  bold
+                  left={
+                    <>
+                      {exp.jobTitle}
+                      {exp.company && (
+                        <span style={{ fontWeight: T.wNormal }}>
+                          {' \u2014 '}{exp.company}
+                          {exp.location ? `, ${exp.location}` : ''}
+                        </span>
+                      )}
+                    </>
+                  }
+                  right={
+                    <>{exp.startDate}&nbsp;&ndash;&nbsp;{exp.current ? 'Present' : exp.endDate}</>
+                  }
+                />
+
+                {/* Bullet responsibilities */}
+                {exp.responsibilities.some(r => r.trim()) && (
+                  <ul style={ulStyle}>
+                    {exp.responsibilities
+                      .filter(r => r.trim())
+                      .map((r, ri) => (
+                        <li key={ri} style={liStyle}>{r}</li>
+                      ))}
+                  </ul>
+                )}
               </div>
             ))}
           </div>
-        </div>
+        </Sec>
       )}
 
-      {/* PROJECTS */}
+      {/* ────────────────────────────────────────────────────────────────
+          PROJECTS
+      ──────────────────────────────────────────────────────────────── */}
       {projects.length > 0 && (
-        <div className="mb-4">
-          <h2 className="text-sm font-bold uppercase border-b border-gray-400 mb-2 pb-1 tracking-wider">
-            Projects
-          </h2>
-          <div className="space-y-3">
-            {projects.map((proj, index) => (
-              <div key={index}>
-                <div className="flex justify-between font-bold">
-                  <span>{proj.title}</span>
-                  {proj.link && <a href={`https://${proj.link.replace(/^https?:\/\//, '')}`} target="_blank" rel="noreferrer" className="text-blue-600 text-xs font-normal underline">{proj.link}</a>}
+        <Sec>
+          <SectionHeading title="Projects" />
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: `${T.itemGap}px`,
+            }}
+          >
+            {projects.map((proj, idx) => (
+              <div
+                key={idx}
+                style={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}
+              >
+                {/* Row: Title — Tech ··· link */}
+                <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'baseline',
+                    width: '100%',
+                  }}
+                >
+                  <span
+                    style={{
+                      ...body,
+                      flex: 1,
+                      wordBreak: 'break-word',
+                      paddingRight: '12px',
+                    }}
+                  >
+                    <span style={{ fontWeight: T.wBold }}>{proj.title}</span>
+                    {proj.technologies && (
+                      <span style={{ fontStyle: 'italic', color: T.cMuted }}>
+                        {' \u2014 '}{proj.technologies}
+                      </span>
+                    )}
+                  </span>
+                  {proj.link && (
+                    <span
+                      style={{
+                        fontFamily: T.font,
+                        fontSize: T.smallSize,
+                        fontWeight: T.wNormal,
+                        color: T.cLink,
+                        textDecoration: 'underline',
+                        whiteSpace: 'nowrap',
+                        flexShrink: 0,
+                        lineHeight: T.lh,
+                      }}
+                    >
+                      {stripProtocol(proj.link)}
+                    </span>
+                  )}
                 </div>
-                <div className="text-gray-800 font-semibold text-xs mb-1">
-                    {proj.technologies}
-                </div>
-                <p className="text-gray-800">
-                    {proj.description}
-                </p>
+
+                {/* Description as bullets */}
+                {proj.description && (
+                  <ul style={ulStyle}>
+                    {proj.description
+                      .split('\n')
+                      .filter(l => l.trim())
+                      .map((line, li) => (
+                        <li key={li} style={liStyle}>
+                          {line.replace(/^[-•]\s*/, '')}
+                        </li>
+                      ))}
+                  </ul>
+                )}
               </div>
             ))}
           </div>
-        </div>
+        </Sec>
       )}
 
-      {/* TECHNICAL SKILLS */}
-      {(skills.languages.length > 0 || skills.frameworks.length > 0 || skills.tools.length > 0 || skills.concepts.length > 0) && (
-        <div className="mb-4">
-          <h2 className="text-sm font-bold uppercase border-b border-gray-400 mb-2 pb-1 tracking-wider">
-            Technical Skills
-          </h2>
-          <div className="space-y-1 text-gray-800">
-             {skills.languages.length > 0 && (
-                 <div className="flex">
-                     <span className="font-bold w-40 flex-shrink-0">Programming Languages:</span>
-                     <span>{skills.languages.join(', ')}</span>
-                 </div>
-             )}
-             {skills.frameworks.length > 0 && (
-                 <div className="flex">
-                     <span className="font-bold w-40 flex-shrink-0">Frameworks / Libraries:</span>
-                     <span>{skills.frameworks.join(', ')}</span>
-                 </div>
-             )}
-             {skills.tools.length > 0 && (
-                 <div className="flex">
-                     <span className="font-bold w-40 flex-shrink-0">Tools / Technologies:</span>
-                     <span>{skills.tools.join(', ')}</span>
-                 </div>
-             )}
-             {skills.concepts.length > 0 && (
-                 <div className="flex">
-                     <span className="font-bold w-40 flex-shrink-0">Concepts:</span>
-                     <span>{skills.concepts.join(', ')}</span>
-                 </div>
-             )}
-             {/* Backward compatibility for old skills array if any */}
-             {Array.isArray(skills) && skills.length > 0 && (
-                 <div className="flex">
-                     <span className="font-bold w-40 flex-shrink-0">Skills:</span>
-                     <span>{skills.join(', ')}</span>
-                 </div>
-             )}
+      {/* ────────────────────────────────────────────────────────────────
+          EDUCATION
+      ──────────────────────────────────────────────────────────────── */}
+      {education.length > 0 && (
+        <Sec>
+          <SectionHeading title="Education" />
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: `${T.itemGap}px`,
+            }}
+          >
+            {education.map((edu, idx) => (
+              <div
+                key={idx}
+                style={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}
+              >
+                {/* Row 1: Degree ··· Year range */}
+                <EntryRow
+                  bold
+                  left={edu.degree}
+                  right={<>{edu.startYear}&nbsp;&ndash;&nbsp;{edu.endYear}</>}
+                />
+                {/* Row 2: Institution ··· CGPA */}
+                <EntryRow
+                  left={
+                    <span style={{ color: T.cMuted }}>{edu.institution}</span>
+                  }
+                  right={
+                    edu.gpa
+                      ? <span style={{ fontWeight: T.wNormal, color: T.cMuted }}>CGPA:&nbsp;{edu.gpa}</span>
+                      : null
+                  }
+                />
+              </div>
+            ))}
           </div>
-        </div>
+        </Sec>
       )}
 
-      {/* CERTIFICATIONS */}
+      {/* ────────────────────────────────────────────────────────────────
+          CERTIFICATIONS
+      ──────────────────────────────────────────────────────────────── */}
       {certifications.length > 0 && (
-        <div className="mb-4">
-          <h2 className="text-sm font-bold uppercase border-b border-gray-400 mb-2 pb-1 tracking-wider">
-            Certifications
-          </h2>
-          <ul className="list-disc pl-5 space-y-1 text-gray-800">
-              {certifications.map((cert, index) => (
-                  <li key={index} className="pl-1">
-                      <span className="font-bold">{cert.name}</span> – {cert.issuer} {cert.date && <span className="text-gray-600 text-xs">({cert.date})</span>}
-                  </li>
-              ))}
+        <Sec>
+          <SectionHeading title="Certifications" />
+          <ul style={ulStyle}>
+            {certifications.map((cert, idx) => (
+              <li key={idx} style={liStyle}>
+                <span style={{ fontWeight: T.wBold }}>{cert.name}</span>
+                {cert.issuer && (
+                  <span style={{ fontWeight: T.wNormal }}>
+                    {' \u2014 '}{cert.issuer}
+                  </span>
+                )}
+                {cert.date && (
+                  <span style={{ color: T.cMuted, fontSize: T.smallSize }}>
+                    &nbsp;({cert.date})
+                  </span>
+                )}
+              </li>
+            ))}
           </ul>
-        </div>
+        </Sec>
       )}
 
-      {/* ACHIEVEMENTS */}
+      {/* ────────────────────────────────────────────────────────────────
+          ACHIEVEMENTS
+      ──────────────────────────────────────────────────────────────── */}
       {achievements.length > 0 && achievements.some(a => a.trim()) && (
-        <div className="mb-4">
-          <h2 className="text-sm font-bold uppercase border-b border-gray-400 mb-2 pb-1 tracking-wider">
-            Achievements
-          </h2>
-          <ul className="list-disc pl-5 space-y-1 text-gray-800">
-              {achievements.filter(a => a.trim()).map((achievement, index) => (
-                  <li key={index} className="pl-1">{achievement}</li>
-              ))}
+        <Sec>
+          <SectionHeading title="Achievements" />
+          <ul style={ulStyle}>
+            {achievements.filter(a => a.trim()).map((item, idx) => (
+              <li key={idx} style={liStyle}>{item}</li>
+            ))}
           </ul>
-        </div>
+        </Sec>
       )}
 
-      {/* EXTRA-CURRICULAR */}
+      {/* ────────────────────────────────────────────────────────────────
+          EXTRA-CURRICULAR ACTIVITIES
+      ──────────────────────────────────────────────────────────────── */}
       {extra.length > 0 && extra.some(e => e.trim()) && (
-        <div className="mb-4">
-          <h2 className="text-sm font-bold uppercase border-b border-gray-400 mb-2 pb-1 tracking-wider">
-            Extra-Curricular Activities
-          </h2>
-          <ul className="list-disc pl-5 space-y-1 text-gray-800">
-              {extra.filter(e => e.trim()).map((item, index) => (
-                  <li key={index} className="pl-1">{item}</li>
-              ))}
+        <Sec>
+          <SectionHeading title="Extra-Curricular Activities" />
+          <ul style={ulStyle}>
+            {extra.filter(e => e.trim()).map((item, idx) => (
+              <li key={idx} style={liStyle}>{item}</li>
+            ))}
           </ul>
-        </div>
+        </Sec>
       )}
 
-      {/* DECLARATION */}
+      {/* ────────────────────────────────────────────────────────────────
+          DECLARATION
+      ──────────────────────────────────────────────────────────────── */}
       {declaration && (
-         <div className="mb-4 mt-8">
-            <h2 className="text-sm font-bold uppercase border-b border-gray-400 mb-2 pb-1 tracking-wider">
-                Declaration
-            </h2>
-            <p className="text-gray-800 italic">
-                {declaration}
-            </p>
-         </div>
+        <Sec extraTopPx={6}>
+          <SectionHeading title="Declaration" />
+          <p style={{ ...body, fontStyle: 'italic', color: T.cMuted }}>
+            {declaration}
+          </p>
+        </Sec>
       )}
 
     </div>

@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import API_URL from '../config';
 import {
@@ -323,6 +323,16 @@ const ATSAnalyzer: React.FC = () => {
   const [result, setResult]           = useState<ATSResult | null>(null);
   const [loading, setLoading]         = useState(false);
   const [error, setError]             = useState('');
+
+  /* ── Pre-fill from Preview's "Analyze ATS" button ── */
+  useEffect(() => {
+    const prefill = sessionStorage.getItem('ats_prefill_text');
+    if (prefill) {
+      setResumeText(prefill);
+      setUploadedName('Current Resume');
+      sessionStorage.removeItem('ats_prefill_text');  // consume once
+    }
+  }, []);
 
   // Handlers
   const handleAnalyze = async () => {

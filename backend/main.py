@@ -33,9 +33,9 @@ GROQ_MODEL   = "llama-3.3-70b-versatile"   # fast + high quality
 groq_client: Optional[Groq] = None
 if GROQ_API_KEY:
     groq_client = Groq(api_key=GROQ_API_KEY)
-    print(f"✅ Groq client initialised — model: {GROQ_MODEL}")
+    print(f"[OK] Groq client initialised -- model: {GROQ_MODEL}")
 else:
-    print("⚠️  Warning: GROQ_API_KEY not found in environment variables")
+    print("[WARN] GROQ_API_KEY not found in environment variables")
 
 app = FastAPI(title="AI Resume Generator API")
 
@@ -48,13 +48,13 @@ DEFAULT_ORIGINS = [
     "http://127.0.0.1:5173",
     "http://127.0.0.1:5174",
     "http://127.0.0.1:3000",
-    "https://ai-resume-builder-o87l.onrender.com",
 ]
 ALLOWED_ORIGINS = list(dict.fromkeys(DEFAULT_ORIGINS + [o.strip() for o in FRONTEND_ORIGINS if o.strip()]))
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=ALLOWED_ORIGINS,
+    allow_origin_regex=r"https://.*\.vercel\.app",  # Allow all Vercel preview/prod deployments
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -69,6 +69,8 @@ class PersonalInfo(BaseModel):
     phone: str
     address: str
     summary: str
+    linkedin: Optional[str] = None
+    github: Optional[str] = None
 
 class Education(BaseModel):
     id: str
@@ -272,10 +274,16 @@ def enhance_resume_with_groq(resume_data: ResumeData) -> dict:
 
 def format_resume_text(resume_data: ResumeData) -> str:
     """Format resume data into plain text (used by /optimize-ats)."""
+    pi = resume_data.personalInfo
+    contact_parts = [pi.email, pi.phone, pi.address]
+    if pi.linkedin: contact_parts.append(pi.linkedin)
+    if pi.github:   contact_parts.append(pi.github)
+    contact_line = " | ".join(p for p in contact_parts if p)
+
     text = (
-        f"{resume_data.personalInfo.firstName.upper()} {resume_data.personalInfo.lastName.upper()}\n"
-        f"{resume_data.personalInfo.email} | {resume_data.personalInfo.phone} | {resume_data.personalInfo.address}\n\n"
-        f"PROFESSIONAL SUMMARY\n{resume_data.personalInfo.summary}\n\nEXPERIENCE\n"
+        f"{pi.firstName.upper()} {pi.lastName.upper()}\n"
+        f"{contact_line}\n\n"
+        f"PROFESSIONAL SUMMARY\n{pi.summary}\n\nEXPERIENCE\n"
     )
     for exp in resume_data.experience:
         text += f"\n{exp.jobTitle}\n{exp.company} | {exp.startDate} - {'Present' if exp.current else exp.endDate}\n"
@@ -334,11 +342,21 @@ def create_ats_friendly_pdf(resume_data: ResumeData, enhanced_content: dict) -> 
     elements.append(Paragraph(esc(f"{resume_data.personalInfo.firstName.upper()} {resume_data.personalInfo.lastName.upper()}"), title_style))
     elements.append(Spacer(1, 0.1 * inch))
 
-    # Contact
-    contact = f"{resume_data.personalInfo.email} | {resume_data.personalInfo.phone}"
+    # Contact line
+    contact_parts = [resume_data.personalInfo.email, resume_data.personalInfo.phone]
     if resume_data.personalInfo.address:
-        contact += f" | {resume_data.personalInfo.address}"
+        contact_parts.append(resume_data.personalInfo.address)
+    contact = " | ".join(p for p in contact_parts if p)
     elements.append(Paragraph(esc(contact), normal_style))
+
+    # Professional links (LinkedIn / GitHub)
+    links_parts = []
+    if resume_data.personalInfo.linkedin:
+        links_parts.append(resume_data.personalInfo.linkedin)
+    if resume_data.personalInfo.github:
+        links_parts.append(resume_data.personalInfo.github)
+    if links_parts:
+        elements.append(Paragraph(esc(" | ".join(links_parts)), normal_style))
     elements.append(Spacer(1, 0.2 * inch))
 
     # Summary
@@ -391,6 +409,18 @@ def create_ats_friendly_pdf(resume_data: ResumeData, enhanced_content: dict) -> 
 
 
 # --- API Endpoints ---
+
+@app.get("/")
+async def health_check():
+    """Health check endpoint — used by Render to confirm the service is alive."""
+    groq_status = "connected" if groq_client else "not connected (GROQ_API_KEY missing)"
+    return {
+        "status": "ok",
+        "service": "AI Resume Generator API",
+        "model": GROQ_MODEL,
+        "groq": groq_status,
+    }
+
 
 @app.post("/enhance-text")
 async def enhance_text(request: TextEnhancementRequest):

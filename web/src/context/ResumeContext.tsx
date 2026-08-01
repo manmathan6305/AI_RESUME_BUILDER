@@ -9,6 +9,8 @@ export type PersonalInfo = {
   phone: string;
   address: string;
   summary: string;
+  linkedin?: string;
+  github?: string;
 };
 
 export type Education = {
@@ -65,6 +67,36 @@ export type ResumeData = {
   declaration?: string;
 };
 
+// --- Completion Calculator ---
+
+export const calculateCompletion = (data: ResumeData): number => {
+  let score = 0;
+  const total = 100;
+
+  const pi = data.personalInfo;
+  if (pi.firstName?.trim()) score += 6;
+  if (pi.lastName?.trim())  score += 6;
+  if (pi.email?.trim())     score += 6;
+  if (pi.phone?.trim())     score += 6;
+  if (pi.address?.trim())   score += 3;
+  if (pi.summary?.trim())   score += 10;
+  if (pi.linkedin?.trim())  score += 4;
+  if (pi.github?.trim())    score += 4;
+
+  if (data.education.length > 0 && data.education.some(e => e.degree?.trim() && e.institution?.trim())) score += 15;
+  if (data.experience.length > 0 && data.experience.some(e => e.jobTitle?.trim())) score += 15;
+  if (data.projects.length > 0 && data.projects.some(p => p.title?.trim())) score += 8;
+
+  const s = data.skills;
+  const hasSkills = s.languages?.length > 0 || s.frameworks?.length > 0 || s.tools?.length > 0 || s.concepts?.length > 0;
+  if (hasSkills) score += 12;
+
+  if (data.certifications.length > 0 && data.certifications.some(c => c.name?.trim())) score += 3;
+  if (data.achievements.length > 0 && data.achievements.some(a => a?.trim())) score += 2;
+
+  return Math.min(100, Math.round((score / total) * 100));
+};
+
 // --- Context Type ---
 
 type ResumeContextType = {
@@ -79,6 +111,7 @@ type ResumeContextType = {
   updateExtra: (extra: string[]) => void;
   updateDeclaration: (declaration: string) => void;
   resetForm: () => void;
+  completionPercent: number;
 };
 
 // --- Defaults ---
@@ -91,6 +124,8 @@ const defaultResumeData: ResumeData = {
     phone: '',
     address: '',
     summary: '',
+    linkedin: '',
+    github: '',
   },
   education: [],
   experience: [],
@@ -128,7 +163,7 @@ export const ResumeProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       const savedData = localStorage.getItem('resumeData');
       if (savedData) {
         const parsed = JSON.parse(savedData);
-        // Ensure structure compatibility (e.g. migration for skills)
+        // Migrate old skills array format
         if (Array.isArray(parsed.skills)) {
           parsed.skills = {
             languages: parsed.skills,
@@ -137,17 +172,26 @@ export const ResumeProvider: React.FC<{ children: React.ReactNode }> = ({ childr
             concepts: []
           };
         }
+        // Ensure personalInfo has new fields
+        parsed.personalInfo = {
+          linkedin: '',
+          github: '',
+          ...parsed.personalInfo,
+        };
         return { ...defaultResumeData, ...parsed };
       }
     } catch (error) {
-      console.error("Failed to load resume data", error);
+      console.error('Failed to load resume data', error);
     }
     return defaultResumeData;
   });
 
+  const [completionPercent, setCompletionPercent] = useState(0);
+
   // Save to localStorage whenever data changes
   useEffect(() => {
     localStorage.setItem('resumeData', JSON.stringify(resumeData));
+    setCompletionPercent(calculateCompletion(resumeData));
   }, [resumeData]);
 
   // --- Actions ---
@@ -205,10 +249,10 @@ export const ResumeProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       updateAchievements,
       updateExtra,
       updateDeclaration,
-      resetForm
+      resetForm,
+      completionPercent,
     }}>
       {children}
     </ResumeContext.Provider>
   );
 };
-

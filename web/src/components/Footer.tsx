@@ -21,7 +21,7 @@ const Footer: React.FC = () => {
               <motion.a
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
-                href="mailto:contact@airesume.com"
+                href="mailto:your.email@example.com"
                 className="text-gray-400 hover:text-white transition-colors"
               >
                 <Mail className="w-5 h-5" />
@@ -29,7 +29,9 @@ const Footer: React.FC = () => {
               <motion.a
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
-                href="https://github.com"
+                href="https://github.com/yourusername"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="text-gray-400 hover:text-white transition-colors"
               >
                 <Github className="w-5 h-5" />
@@ -37,7 +39,9 @@ const Footer: React.FC = () => {
               <motion.a
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
-                href="https://linkedin.com"
+                href="https://linkedin.com/in/yourusername"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="text-gray-400 hover:text-white transition-colors"
               >
                 <Linkedin className="w-5 h-5" />
@@ -67,7 +71,7 @@ const Footer: React.FC = () => {
         </div>
 
         <div className="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
-          <p>&copy; 2025 AI Resume Generator. All rights reserved.</p>
+          <p>&copy; {new Date().getFullYear()} AI Resume Generator. All rights reserved.</p>
         </div>
       </div>
     </footer>

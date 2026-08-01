@@ -3,7 +3,7 @@
 An intelligent, full-stack resume building platform powered by **Groq LLaMA 3.3 70B AI**. Build professional, ATS-optimized resumes in minutes — with AI-enhanced content, real-time preview, and automated ATS scoring.
 
 > **Live Demo:** Run locally by following the setup steps below.  
-> **GitHub:** [https://github.com/Suganth1795/AI-Resume-builder](https://github.com/Suganth1795/AI-Resume-builder)
+> **GitHub:** [https://github.com/yourusername/AI-Resume-builder](https://github.com/yourusername/AI-Resume-builder)
 
 ---
 
@@ -263,7 +263,7 @@ Full ATS optimization — analyzes resume and returns improved content.
 
 ### Step 1 — Clone the repository
 ```bash
-git clone https://github.com/Suganth1795/AI-Resume-builder.git
+git clone https://github.com/yourusername/AI-Resume-builder.git
 cd AI-Resume-builder
 ```
 
@@ -377,4 +377,4 @@ This project is open source. Feel free to clone, modify, and build upon it.
 
 ## 👤 Author
 
-**Suganth** — [GitHub](https://github.com/Suganth1795)
+**Your Name** — [GitHub](https://github.com/yourusername)
