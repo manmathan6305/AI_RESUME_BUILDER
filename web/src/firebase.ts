@@ -1,5 +1,5 @@
 import { initializeApp } from "firebase/app";
-import { getAnalytics } from "firebase/analytics";
+import { getAnalytics, isSupported } from "firebase/analytics";
 import {
   getAuth,
   GoogleAuthProvider,
@@ -11,23 +11,40 @@ import {
   signOut,
 } from "firebase/auth";
 
+// Firebase configuration
 const firebaseConfig = {
-  apiKey: "AIzaSyDrNvUWFH15I8ThpOkCX3H1rurwADa0Zx0",
-  authDomain: "resume-builder-75597.firebaseapp.com",
-  projectId: "resume-builder-75597",
-  storageBucket: "resume-builder-75597.firebasestorage.app",
-  messagingSenderId: "531343333187",
-  appId: "1:531343333187:web:5f3bc66faf80bbcbf7c1f6",
-  measurementId: "G-2QWPR8BJW5",
+  apiKey: "AIzaSyC7yff-HxP2EI-tuiTshizJC3Af3L5Ikdo",
+  authDomain: "ai-resume-builder-ae4fa.firebaseapp.com",
+  projectId: "ai-resume-builder-ae4fa",
+  storageBucket: "ai-resume-builder-ae4fa.firebasestorage.app",
+  messagingSenderId: "740810352488",
+  appId: "1:740810352488:web:0e21dbcef7db97d56498dd",
+  measurementId: "G-RV0D970FHF",
 };
 
+console.log("Firebase Project:", firebaseConfig.projectId);
+console.log("Firebase Auth Domain:", firebaseConfig.authDomain);
+
+// Initialize Firebase
 const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
+
+// Initialize Analytics only if supported
+let analytics = null;
+
+isSupported().then((supported) => {
+  if (supported) {
+    analytics = getAnalytics(app);
+  }
+});
+
+// Initialize Authentication
 const auth = getAuth(app);
 const googleProvider = new GoogleAuthProvider();
 
 export {
+  app,
   auth,
+  analytics,
   googleProvider,
   signInWithPopup,
   createUserWithEmailAndPassword,
@@ -35,5 +52,4 @@ export {
   sendPasswordResetEmail,
   onAuthStateChanged,
   signOut,
-  analytics,
 };
