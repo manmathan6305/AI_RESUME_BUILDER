@@ -198,6 +198,7 @@ const LivePreview: React.FC = () => {
   const profileLinks: string[] = [];
   if (personalInfo.linkedin) profileLinks.push(stripProtocol(personalInfo.linkedin));
   if (personalInfo.github) profileLinks.push(stripProtocol(personalInfo.github));
+  if (personalInfo.portfolio) profileLinks.push(stripProtocol(personalInfo.portfolio));
 
   /* ── Skill rows (non-empty only) ── */
   const skillRows = [
@@ -319,7 +320,7 @@ const LivePreview: React.FC = () => {
           </p>
         )}
 
-        {/* Profile links line: LinkedIn | GitHub */}
+        {/* Profile links line */}
         {profileLinks.length > 0 && (
           <p
             style={{

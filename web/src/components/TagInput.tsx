@@ -31,7 +31,7 @@ const DEFAULT_SUGGESTIONS = [
 
 const TagInput: React.FC<TagInputProps> = ({ 
   label, 
-  placeholder = "Add a skill...", 
+  placeholder = "Enter an item", 
   tags, 
   setTags, 
   suggestions = DEFAULT_SUGGESTIONS,

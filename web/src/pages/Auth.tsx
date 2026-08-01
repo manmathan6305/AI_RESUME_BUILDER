@@ -201,12 +201,12 @@ const Auth: React.FC = () => {
 
   const handleForgotPassword = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!forgotPasswordEmail.trim()) {
       setErrors({ general: "Please enter your email address" });
       return;
     }
-    
+
     if (!validateEmail(forgotPasswordEmail)) {
       setErrors({ general: "Please enter a valid email address" });
       return;
@@ -327,7 +327,7 @@ const Auth: React.FC = () => {
                 label="Full Name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="John Doe"
+                placeholder="your full name"
                 error={errors.name}
               />
             )}
@@ -339,7 +339,7 @@ const Auth: React.FC = () => {
               label="Email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="suganthcl7@gmail.com"
+              placeholder="EMAIL_ADDRESS"
               error={errors.email}
             />
 
@@ -511,7 +511,7 @@ const Auth: React.FC = () => {
                 </svg>
               </button>
             </div>
-            
+
             <p className="text-gray-500 text-sm mb-4">
               Enter your email address and we'll send you a link to reset your password.
             </p>

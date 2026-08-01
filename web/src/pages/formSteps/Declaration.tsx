@@ -11,9 +11,7 @@ const Declaration: React.FC = () => {
   const { resumeData, updateDeclaration } = useResume();
   const navigate = useNavigate();
 
-  const [declaration, setDeclaration] = useState<string>(
-    resumeData.declaration || DEFAULT_DECLARATION
-  );
+  const [declaration, setDeclaration] = useState<string>(resumeData.declaration || '');
 
   useEffect(() => {
     document.title = 'Declaration - AI Resume Generator';
@@ -81,13 +79,14 @@ const Declaration: React.FC = () => {
           value={declaration}
           onChange={(e) => setDeclaration(e.target.value)}
           rows={4}
+          placeholder="Enter your declaration"
           className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all resize-none"
         />
         <button
-          onClick={() => setDeclaration(DEFAULT_DECLARATION)}
+          onClick={() => setDeclaration('')}
           className="mt-2 text-xs text-primary-600 dark:text-primary-400 hover:underline"
         >
-          Reset to default text
+          Clear text
         </button>
 
         <div className="flex justify-between items-center pt-6">

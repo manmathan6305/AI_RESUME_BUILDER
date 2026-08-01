@@ -86,7 +86,7 @@ const ExtraInfo: React.FC = () => {
                                 label={`Activity ${index + 1}`}
                                 value={extra}
                                 onChange={(value) => handleChange(index, value)}
-                                placeholder="e.g. Member of University Coding Club"
+                                placeholder="Enter an activity"
                                 multiline
                                 rows={2}
                             />

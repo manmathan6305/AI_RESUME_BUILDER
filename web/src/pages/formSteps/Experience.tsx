@@ -158,7 +158,7 @@ const Experience: React.FC = () => {
                   label="Job Title"
                   value={experience.jobTitle}
                   onChange={(value) => handleInputChange(experience.id, 'jobTitle', value)}
-                  placeholder="Software Engineer"
+                  placeholder="Enter job title"
                   required
                 />
                 
@@ -166,7 +166,7 @@ const Experience: React.FC = () => {
                   label="Company"
                   value={experience.company}
                   onChange={(value) => handleInputChange(experience.id, 'company', value)}
-                  placeholder="Tech Corp"
+                  placeholder="Enter company name"
                   required
                 />
                 
@@ -215,7 +215,7 @@ const Experience: React.FC = () => {
                             <SmartTextArea
                                 value={responsibility}
                                 onChange={(value) => handleResponsibilityChange(experience.id, respIndex, value)}
-                                placeholder="Describe your responsibilities and achievements..."
+                              placeholder="Enter a responsibility or achievement"
                                 rows={3}
                                 type="responsibility"
                             />

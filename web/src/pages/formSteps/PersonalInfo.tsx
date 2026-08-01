@@ -6,18 +6,7 @@ import ProgressBar from '../../components/ProgressBar';
 import FormField from '../../components/FormField';
 import StepNavigation from '../../components/StepNavigation';
 import SmartTextArea from '../../components/SmartTextArea';
-import { Sparkles, Linkedin, Github } from 'lucide-react';
-
-const EXAMPLE_DATA = {
-  firstName: 'Alex',
-  lastName: 'Johnson',
-  email: 'alex.johnson@example.com',
-  phone: '+1 (555) 987-6543',
-  address: 'San Francisco, CA, USA',
-  summary: 'Results-driven Software Engineer with 3+ years of experience building scalable web applications using React, Node.js, and Python. Passionate about clean code, user experience, and delivering impactful solutions in fast-paced environments.',
-  linkedin: 'linkedin.com/in/alexjohnson',
-  github: 'github.com/alexjohnson',
-};
+import { Linkedin, Github, Globe } from 'lucide-react';
 
 const PersonalInfo: React.FC = () => {
   const { resumeData, updatePersonalInfo } = useResume();
@@ -25,9 +14,6 @@ const PersonalInfo: React.FC = () => {
   
   const [formData, setFormData] = useState(resumeData.personalInfo);
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [showExampleHint, setShowExampleHint] = useState(
-    !resumeData.personalInfo.firstName && !resumeData.personalInfo.summary
-  );
 
   useEffect(() => {
     document.title = 'Personal Information - AI Resume Generator';
@@ -40,16 +26,9 @@ const PersonalInfo: React.FC = () => {
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
-    setShowExampleHint(false);
     if (errors[field]) {
       setErrors(prev => ({ ...prev, [field]: '' }));
     }
-  };
-
-  const fillWithExample = () => {
-    setFormData(EXAMPLE_DATA);
-    setShowExampleHint(false);
-    updatePersonalInfo(EXAMPLE_DATA);
   };
 
   const validateForm = () => {
@@ -95,7 +74,7 @@ const PersonalInfo: React.FC = () => {
         transition={{ duration: 0.6, delay: 0.2 }}
         className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8"
       >
-        {/* Header with Try Example hint */}
+        {/* Header */}
         <div className="flex items-start justify-between mb-8">
           <div>
             <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-1">
@@ -105,19 +84,6 @@ const PersonalInfo: React.FC = () => {
               Let's start with your basic details. Fields marked <span className="text-red-500">*</span> are required.
             </p>
           </div>
-
-          {showExampleHint && (
-            <motion.button
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              onClick={fillWithExample}
-              className="flex-shrink-0 flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-violet-500 to-purple-600 text-white text-sm font-medium rounded-lg shadow-md hover:shadow-lg hover:from-violet-600 hover:to-purple-700 transition-all duration-200"
-              title="Fill the form with sample data to see how a completed resume looks"
-            >
-              <Sparkles className="w-4 h-4" />
-              Try Example
-            </motion.button>
-          )}
         </div>
 
         {/* Name Row */}
@@ -126,7 +92,7 @@ const PersonalInfo: React.FC = () => {
             label="First Name"
             value={formData.firstName}
             onChange={(value) => handleInputChange('firstName', value)}
-            placeholder="e.g. Alex"
+            placeholder="Enter your first name"
             required
             error={errors.firstName}
           />
@@ -134,7 +100,7 @@ const PersonalInfo: React.FC = () => {
             label="Last Name"
             value={formData.lastName}
             onChange={(value) => handleInputChange('lastName', value)}
-            placeholder="e.g. Johnson"
+            placeholder="Enter your last name"
             required
             error={errors.lastName}
           />
@@ -147,7 +113,7 @@ const PersonalInfo: React.FC = () => {
             type="email"
             value={formData.email}
             onChange={(value) => handleInputChange('email', value)}
-            placeholder="alex@example.com"
+            placeholder="Enter your email address"
             required
             error={errors.email}
           />
@@ -156,7 +122,7 @@ const PersonalInfo: React.FC = () => {
             type="tel"
             value={formData.phone}
             onChange={(value) => handleInputChange('phone', value)}
-            placeholder="+1 (555) 123-4567"
+            placeholder="Enter your phone number"
             required
             error={errors.phone}
           />
@@ -168,7 +134,7 @@ const PersonalInfo: React.FC = () => {
             label="Location"
             value={formData.address}
             onChange={(value) => handleInputChange('address', value)}
-            placeholder="City, State, Country  (e.g. New York, NY, USA)"
+            placeholder="Enter your location"
           />
         </div>
 
@@ -186,7 +152,7 @@ const PersonalInfo: React.FC = () => {
               type="url"
               value={formData.linkedin || ''}
               onChange={(e) => handleInputChange('linkedin', e.target.value)}
-              placeholder="linkedin.com/in/yourname"
+              placeholder="Enter your LinkedIn URL"
               className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all"
             />
           </div>
@@ -203,7 +169,24 @@ const PersonalInfo: React.FC = () => {
               type="url"
               value={formData.github || ''}
               onChange={(e) => handleInputChange('github', e.target.value)}
-              placeholder="github.com/yourusername"
+              placeholder="Enter your GitHub URL"
+              className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <span className="flex items-center gap-1.5">
+                <Globe className="w-4 h-4 text-green-600" />
+                Portfolio Link
+                <span className="text-xs text-gray-400 font-normal ml-1">(optional)</span>
+              </span>
+            </label>
+            <input
+              type="url"
+              value={formData.portfolio || ''}
+              onChange={(e) => handleInputChange('portfolio', e.target.value)}
+              placeholder="Enter your portfolio URL"
               className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all"
             />
           </div>
@@ -214,7 +197,7 @@ const PersonalInfo: React.FC = () => {
           label="Professional Summary"
           value={formData.summary}
           onChange={(value) => handleInputChange('summary', value)}
-          placeholder="Brief 2–3 sentence overview of your professional background, key skills, and career goals. Use the ✨ AI Enhance button to improve it automatically."
+          placeholder="Enter a brief professional summary"
           rows={4}
           type="summary"
         />

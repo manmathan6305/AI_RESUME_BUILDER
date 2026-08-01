@@ -133,7 +133,7 @@ const Education: React.FC = () => {
                   label="Degree"
                   value={education.degree}
                   onChange={(value) => handleInputChange(education.id, 'degree', value)}
-                  placeholder="Bachelor of Science in Computer Science"
+                  placeholder="Enter your degree"
                   required
                 />
                 
@@ -141,7 +141,7 @@ const Education: React.FC = () => {
                   label="Institution"
                   value={education.institution}
                   onChange={(value) => handleInputChange(education.id, 'institution', value)}
-                  placeholder="University of Technology"
+                  placeholder="Enter institution name"
                   required
                 />
                 
@@ -149,7 +149,7 @@ const Education: React.FC = () => {
                   label="Start Year"
                   value={education.startYear}
                   onChange={(value) => handleInputChange(education.id, 'startYear', value)}
-                  placeholder="2018"
+                  placeholder="Enter start year"
                   required
                 />
                 
@@ -157,7 +157,7 @@ const Education: React.FC = () => {
                   label="End Year"
                   value={education.endYear}
                   onChange={(value) => handleInputChange(education.id, 'endYear', value)}
-                  placeholder="2022"
+                  placeholder="Enter end year"
                   required
                 />
                 
@@ -165,7 +165,7 @@ const Education: React.FC = () => {
                   label="GPA (Optional)"
                   value={education.gpa || ''}
                   onChange={(value) => handleInputChange(education.id, 'gpa', value)}
-                  placeholder="3.8"
+                  placeholder="Enter GPA"
                 />
               </div>
             </motion.div>

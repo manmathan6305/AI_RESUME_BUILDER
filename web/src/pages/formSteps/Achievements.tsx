@@ -87,7 +87,7 @@ const Achievements: React.FC = () => {
                     label={`Achievement ${index + 1}`}
                     value={achievement}
                     onChange={(value) => handleChange(index, value)}
-                    placeholder="e.g. Won 1st place in Hackathon"
+                  placeholder="Enter an achievement"
                     multiline
                     rows={2}
                 />

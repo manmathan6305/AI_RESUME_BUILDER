@@ -117,14 +117,14 @@ const Projects: React.FC = () => {
                 label="Project Title"
                 value={project.title}
                 onChange={(value) => handleInputChange(project.id, 'title', value)}
-                placeholder="e.g. E-commerce Website"
+                placeholder="Enter project title"
                 required
               />
               <FormField
                 label="Link (Optional)"
                 value={project.link || ''}
                 onChange={(value) => handleInputChange(project.id, 'link', value)}
-                placeholder="e.g. github.com/username/project"
+                placeholder="Enter project link"
               />
             </div>
             
@@ -132,14 +132,14 @@ const Projects: React.FC = () => {
                 label="Description"
                 value={project.description}
                 onChange={(value) => handleInputChange(project.id, 'description', value)}
-                placeholder="Brief description of the project..."
+                placeholder="Enter a project description"
                 rows={4}
                 required
             />
             
             <TagInput
                 label="Technologies Used"
-                placeholder="e.g. React, Node.js, MongoDB"
+                placeholder="Enter technologies used"
                 tags={project.technologies ? project.technologies.split(',').map(t => t.trim()).filter(Boolean) : []}
                 setTags={(tags) => handleInputChange(project.id, 'technologies', tags.join(', '))}
             />

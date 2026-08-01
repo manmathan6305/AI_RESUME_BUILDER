@@ -293,6 +293,9 @@ export const ResumePDF: React.FC<{ data: ResumeData }> = ({ data }) => {
       personalInfo.github
         ? { label: stripProto(personalInfo.github),   url: ensureHttps(personalInfo.github) }
         : null,
+      personalInfo.portfolio
+        ? { label: stripProto(personalInfo.portfolio), url: ensureHttps(personalInfo.portfolio) }
+        : null,
     ] as ({ label: string; url: string } | null)[]
   ).filter(Boolean) as { label: string; url: string }[];
 

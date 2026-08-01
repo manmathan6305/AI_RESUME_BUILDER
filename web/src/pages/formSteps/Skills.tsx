@@ -73,7 +73,7 @@ const Skills: React.FC = () => {
 
         <TagInput
           label="Programming Languages"
-          placeholder="e.g. JavaScript, Python..."
+          placeholder="Enter a programming language"
           tags={skills.languages}
           setTags={(tags) => setSkills(prev => ({ ...prev, languages: tags }))}
           suggestions={suggestions.languages}
@@ -81,7 +81,7 @@ const Skills: React.FC = () => {
 
         <TagInput
           label="Frameworks & Libraries"
-          placeholder="e.g. React, Django..."
+          placeholder="Enter a framework or library"
           tags={skills.frameworks}
           setTags={(tags) => setSkills(prev => ({ ...prev, frameworks: tags }))}
           suggestions={suggestions.frameworks}
@@ -89,7 +89,7 @@ const Skills: React.FC = () => {
 
         <TagInput
           label="Tools & Platforms"
-          placeholder="e.g. Git, AWS..."
+          placeholder="Enter a tool or platform"
           tags={skills.tools}
           setTags={(tags) => setSkills(prev => ({ ...prev, tools: tags }))}
           suggestions={suggestions.tools}
@@ -97,7 +97,7 @@ const Skills: React.FC = () => {
 
         <TagInput
           label="Key Concepts"
-          placeholder="e.g. REST API, Agile..."
+          placeholder="Enter a key concept"
           tags={skills.concepts}
           setTags={(tags) => setSkills(prev => ({ ...prev, concepts: tags }))}
           suggestions={suggestions.concepts}

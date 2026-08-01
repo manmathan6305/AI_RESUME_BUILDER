@@ -116,21 +116,21 @@ const Certifications: React.FC = () => {
                                 label="Certification Name"
                                 value={cert.name}
                                 onChange={(value) => handleInputChange(cert.id, 'name', value)}
-                                placeholder="e.g. AWS Certified Solutions Architect"
+                                placeholder="Enter certification name"
                                 required
                             />
                             <FormField
                                 label="Issuing Organization"
                                 value={cert.issuer}
                                 onChange={(value) => handleInputChange(cert.id, 'issuer', value)}
-                                placeholder="e.g. Amazon Web Services"
+                                placeholder="Enter issuing organization"
                                 required
                             />
                             <FormField
                                 label="Date"
                                 value={cert.date}
                                 onChange={(value) => handleInputChange(cert.id, 'date', value)}
-                                placeholder="e.g. Aug 2023"
+                                placeholder="Enter date"
                             />
                         </div>
                     </motion.div>

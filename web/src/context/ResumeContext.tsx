@@ -11,6 +11,7 @@ export type PersonalInfo = {
   summary: string;
   linkedin?: string;
   github?: string;
+  portfolio?: string;
 };
 
 export type Education = {
@@ -126,6 +127,7 @@ const defaultResumeData: ResumeData = {
     summary: '',
     linkedin: '',
     github: '',
+    portfolio: '',
   },
   education: [],
   experience: [],
@@ -176,6 +178,7 @@ export const ResumeProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         parsed.personalInfo = {
           linkedin: '',
           github: '',
+          portfolio: '',
           ...parsed.personalInfo,
         };
         return { ...defaultResumeData, ...parsed };

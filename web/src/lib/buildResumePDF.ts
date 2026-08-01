@@ -45,6 +45,7 @@ export function buildResumeText(data: ResumeData): string {
   const links: string[] = [];
   if (personalInfo.linkedin) links.push(personalInfo.linkedin);
   if (personalInfo.github)   links.push(personalInfo.github);
+  if (personalInfo.portfolio) links.push(personalInfo.portfolio);
   if (links.length) lines.push(links.join(' | '));
 
   lines.push('');
