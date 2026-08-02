@@ -68,7 +68,12 @@ const SmartTextArea: React.FC<SmartTextAreaProps> = ({
       }
     } catch (e) {
       console.error('AI service error', e);
-      setErrorMsg(e instanceof Error ? e.message : 'Cannot reach AI service');
+      const message = e instanceof Error ? e.message : 'Cannot reach AI service';
+      setErrorMsg(
+        message.toLowerCase().includes('failed to fetch')
+          ? 'Cannot reach AI service. Please try again in a few seconds.'
+          : message
+      );
       setTimeout(() => setErrorMsg(''), 5000);
     } finally {
       setIsEnhancing(false);

@@ -359,7 +359,12 @@ const ATSAnalyzer: React.FC = () => {
       setResult(data);
       setStep(3);
     } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : 'An unexpected error occurred.');
+      const message = e instanceof Error ? e.message : 'An unexpected error occurred.';
+      setError(
+        message.toLowerCase().includes('failed to fetch')
+          ? 'Cannot connect to the ATS server right now. Please retry in a few seconds.'
+          : message
+      );
     } finally {
       setLoading(false);
     }
